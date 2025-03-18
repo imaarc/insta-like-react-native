@@ -5,6 +5,11 @@ import { api } from "./_generated/api";
 
 const http = httpRouter();
 
+//1. need to make sure that the webhook event is coming from clerk
+//2. if so, will listen for the user.created event
+//3. will save the user to the database
+
+
 http.route({
     path:"/clerk-webhook",
     method:"POST",
@@ -46,13 +51,17 @@ http.route({
             return new Response("Error occured", {status:400});
         }
 
-        const eventType = evt.Type;
+        const eventType = evt.type;
 
         if (eventType === "user.created") {
             const {id, email_addresses, first_name, last_name, image_url} = evt.data;
 
-            const email = email_addresses[0].email_addresses;
+            const email = email_addresses[0].email_address;
             const name = `${first_name || ""} ${last_name || ""}`.trim();
+
+            const username = email
+                ? email.split("@")[0]
+                : name.split(" ").join("_").toLowerCase() || `user_${id.substring(0, 6)}`;
 
             try {
                 await ctx.runMutation(api.users.createUser, {
@@ -60,7 +69,7 @@ http.route({
                     fullname:name,
                     image:image_url,
                     clerkId:id,
-                    username:email.split("@")[0],
+                    username,
                 })
             } catch (error) {
                 console.log("Error creating user", error);
