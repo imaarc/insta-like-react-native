@@ -1,10 +1,16 @@
-import { Text, View } from "react-native";
+import { COLORS } from "@/constants/themes";
+import { styles } from "@/styles/auth.style";
+import { Text, TouchableOpacity, Touchable, View } from "react-native";
+import { useAuth } from "@clerk/clerk-expo";
 
 export default function Index() {
+  const {signOut} = useAuth();
   return (
-    <View>
+    <View style={styles.container}>
      
-    <Text>Index</Text>
+    <TouchableOpacity onPress={() => signOut()}>
+        <Text style={{color:COLORS.white}}>Signout</Text>
+    </TouchableOpacity>
       
     </View>
   );
